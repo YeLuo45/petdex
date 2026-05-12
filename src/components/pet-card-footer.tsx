@@ -6,6 +6,9 @@ import { memo, useCallback, useState } from "react";
 import { useClerk } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Download, Heart, Loader2, Share2, TerminalSquare } from "lucide-react";
+import { useLocale } from "next-intl";
+
+import { formatLocalizedNumber } from "@/lib/format-number";
 
 import { PetSoundButton } from "@/components/pet-sound-button";
 
@@ -34,11 +37,14 @@ function PetCardFooterImpl({
 }) {
   const router = useRouter();
   const clerk = useClerk();
+  const locale = useLocale();
 
   const [liked, setLiked] = useState(initialLiked ?? false);
   const [count, setCount] = useState(likeCount);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const formattedLikeCount = formatLocalizedNumber(count, locale);
+  const formattedInstallCount = formatLocalizedNumber(installCount, locale);
 
   const toggleLike = useCallback(
     async (e: React.MouseEvent) => {
@@ -148,7 +154,7 @@ function PetCardFooterImpl({
                 liked ? "text-rose-600" : "text-stone-500"
               }`}
             >
-              {count}
+              {formattedLikeCount}
             </span>
           ) : null}
         </FooterBtn>
@@ -161,7 +167,7 @@ function PetCardFooterImpl({
           <TerminalSquare className="size-3.5" />
           {installCount > 0 ? (
             <span className="font-mono text-[11px] text-muted-3">
-              {installCount}
+              {formattedInstallCount}
             </span>
           ) : null}
         </FooterBtn>

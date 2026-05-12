@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useLocale } from "next-intl";
+
 import type { PetWithMetrics } from "@/lib/pets";
+import { cn } from "@/lib/utils";
 
 import { PetCard } from "@/components/pet-gallery";
 
@@ -15,6 +18,7 @@ type Props = {
 };
 
 export function CollectionPetGrid({ pets, dexMap, caughtSlugs }: Props) {
+  const isZh = useLocale() === "zh";
   const [pageCount, setPageCount] = useState(1);
   const caughtSet = useMemo(() => new Set(caughtSlugs), [caughtSlugs]);
 
@@ -49,7 +53,12 @@ export function CollectionPetGrid({ pets, dexMap, caughtSlugs }: Props) {
 
   return (
     <>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-5">
+      <div
+        className={cn(
+          "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+          isZh ? "md:gap-3" : "md:gap-5",
+        )}
+      >
         {slice.map((pet, index) => (
           <PetCard
             key={pet.slug}

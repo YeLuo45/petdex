@@ -26,10 +26,12 @@ import { useLocale, useTranslations } from "next-intl";
 import type { PublicFeedAd } from "@/lib/ads/queries";
 import { COLOR_FAMILIES, type ColorFamily } from "@/lib/color-families";
 import { formatBatchLabel, getBatchKey } from "@/lib/dex-batch";
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { petStates } from "@/lib/pet-states";
 import type { PetWithMetrics } from "@/lib/pets";
 import { PET_KINDS, PET_VIBES, type PetKind, type PetVibe } from "@/lib/types";
 import { isAllowedAvatarUrl } from "@/lib/url-allowlist";
+import { cn } from "@/lib/utils";
 
 import { FeedAdSlot } from "@/components/ads/feed-ad-slot";
 import { useHeaderState } from "@/components/header-state-provider";
@@ -133,6 +135,8 @@ export function PetGallery({
   caughtSlugs,
   ads = [],
 }: PetGalleryProps) {
+  const locale = useLocale();
+  const isZh = locale === "zh";
   const t = useTranslations("gallery");
   const [query, setQuery] = useState("");
   const trimmedQuery = query.trim();
@@ -557,9 +561,11 @@ export function PetGallery({
       ) : null}
 
       <div
-        className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-5 ${
-          loadingPage ? "opacity-60 transition" : ""
-        }`}
+        className={cn(
+          "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+          isZh ? "md:gap-3" : "md:gap-5",
+          loadingPage && "opacity-60 transition",
+        )}
       >
         {pets.map((pet, index) => {
           const ad = adForPetIndex(ads, index);
@@ -824,6 +830,7 @@ function PetCardImpl({
 }: PetCardProps) {
   const t = useTranslations("gallery");
   const locale = useLocale();
+  const isZh = locale === "zh";
   const dexLabel =
     dexNumber != null
       ? dexNumber < 1000
@@ -833,6 +840,7 @@ function PetCardImpl({
   const { likeCount, installCount } = pet.metrics;
   const isDiscovered = pet.source === "discover";
   const href = `/pets/${pet.slug}`;
+  const formattedInstallCount = formatLocalizedNumber(installCount, locale);
   const batchLabel = pet.approvedAt
     ? formatBatchLabel(getBatchKey(new Date(pet.approvedAt)))
     : null;
@@ -895,7 +903,7 @@ function PetCardImpl({
             : null}
           {installCount > 0 ? (
             <span className="pointer-events-none absolute right-5 bottom-2 font-mono text-[10px] tracking-[0.22em] text-muted-4 uppercase">
-              {compactNumber(installCount)} install
+              {formattedInstallCount} install
               {installCount === 1 ? "" : "s"}
             </span>
           ) : null}
@@ -918,7 +926,12 @@ function PetCardImpl({
               {pet.kind}
             </span>
           </div>
-          <p className="line-clamp-2 text-sm leading-6 text-muted-2">
+          <p
+            className={cn(
+              "line-clamp-2 text-sm text-muted-2",
+              isZh ? "leading-tight" : "leading-6",
+            )}
+          >
             {pet.description}
           </p>
           {batchLabel ? (
@@ -1032,12 +1045,6 @@ function toggleSet<T>(set: Set<T>, value: T): Set<T> {
   if (next.has(value)) next.delete(value);
   else next.add(value);
   return next;
-}
-
-function compactNumber(n: number): string {
-  if (n < 1000) return n.toString();
-  if (n < 10_000) return `${(n / 1000).toFixed(1)}k`;
-  return `${Math.round(n / 1000)}k`;
 }
 
 // NoResults — empty state. When the user hit a vibe search with no

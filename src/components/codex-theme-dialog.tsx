@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Check, Copy, Loader2 } from "lucide-react";
 
+import { CodexLogo } from "@/components/codex-logo";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-import { CodexLogo } from "@/components/codex-logo";
 
 type ThemeResponse = {
   slug: string;

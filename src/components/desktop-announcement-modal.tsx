@@ -78,12 +78,8 @@ export function DesktopAnnouncementModal({
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
             {t("title")}
           </h2>
-          <p className="text-sm leading-6 text-muted-2">
-            {t("description")}
-          </p>
-          <p className="text-sm leading-6 text-muted-2">
-            {t("platforms")}
-          </p>
+          <p className="text-sm leading-6 text-muted-2">{t("description")}</p>
+          <p className="text-sm leading-6 text-muted-2">{t("platforms")}</p>
 
           <div className="flex items-center gap-2 pt-1">
             <Link

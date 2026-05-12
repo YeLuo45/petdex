@@ -104,7 +104,11 @@ function PrimaryButton({
     // run on Intel anyway (slower, but it launches).
     const href = arch === "intel" ? MACOS_X64_URL : MACOS_ARM64_URL;
     const labelSuffix =
-      arch === "intel" ? " (Intel)" : arch === "arm64" ? " (Apple Silicon)" : "";
+      arch === "intel"
+        ? " (Intel)"
+        : arch === "arm64"
+          ? " (Apple Silicon)"
+          : "";
     return (
       <a
         href={href}
@@ -148,4 +152,3 @@ function PrimaryButton({
     </span>
   );
 }
-

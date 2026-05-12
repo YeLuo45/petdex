@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from "react";
 
 import {
   Check,
+  X as CloseIcon,
   Copy,
   ExternalLink,
   Layers,
   Link2,
   MoreHorizontal,
   Terminal,
-  X as CloseIcon,
 } from "lucide-react";
 
 import { CodexLogo } from "@/components/codex-logo";

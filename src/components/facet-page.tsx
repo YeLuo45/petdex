@@ -4,7 +4,10 @@
 
 import Link from "next/link";
 
+import { getLocale } from "next-intl/server";
+
 import type { PetWithMetrics } from "@/lib/pets";
+import { cn } from "@/lib/utils";
 
 import { CommandLine } from "@/components/command-line";
 import { PetCard } from "@/components/pet-gallery";
@@ -22,7 +25,7 @@ type FacetPageProps = {
   related: { href: string; label: string; count: number }[];
 };
 
-export function FacetPage({
+export async function FacetPage({
   eyebrow,
   title,
   intro,
@@ -32,6 +35,7 @@ export function FacetPage({
   relatedLabel,
   related,
 }: FacetPageProps) {
+  const locale = await getLocale();
   const cmd = `npx petdex install ${exampleSlug ?? pets[0]?.slug ?? "boba"}`;
 
   return (
@@ -62,7 +66,12 @@ export function FacetPage({
       </section>
 
       <section className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 py-12 md:px-8 md:py-16">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 md:gap-5">
+        <div
+          className={cn(
+            "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+            locale === "zh" ? "md:gap-3" : "md:gap-5",
+          )}
+        >
           {pets.map((pet, index) => (
             <PetCard key={pet.slug} pet={pet} index={index} />
           ))}

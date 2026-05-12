@@ -9,6 +9,7 @@ import { getCollectionsContainingPet } from "@/lib/collections";
 import { db, schema } from "@/lib/db/client";
 import { getMetricsForSlug, getMetricsSummary } from "@/lib/db/metrics";
 import { formatDexNumber, getDexNumberMap } from "@/lib/dex";
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { buildLocaleAlternates } from "@/lib/locale-routing";
 import { resolveStoredOwnerCreditFor } from "@/lib/owner-credit";
 import { computeStatsFromSummary } from "@/lib/pet-stats";
@@ -33,6 +34,7 @@ import { PetSoundButton } from "@/components/pet-sound-button";
 import { PetSprite } from "@/components/pet-sprite";
 import { PetStateViewer } from "@/components/pet-state-viewer";
 import { ReducedMotionHint } from "@/components/reduced-motion-hint";
+import { SaveAsSticker } from "@/components/save-as-sticker";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StaticPetSprite } from "@/components/static-pet-sprite";
@@ -121,7 +123,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function PetPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const pet = await getPet(slug);
   const tPet = await getTranslations("pet");
 
@@ -426,11 +428,14 @@ export default async function PetPage({ params }: PageProps) {
                   }}
                   variant="detail"
                 />
+                <SaveAsSticker slug={pet.slug} displayName={pet.displayName} />
                 <PetTakedownReportButton
                   pet={{ slug: pet.slug, displayName: pet.displayName }}
                 />
                 <span className="font-mono text-[11px] tracking-[0.18em] text-muted-3 uppercase">
-                  {metrics.installCount} installs · {metrics.zipDownloadCount}{" "}
+                  {formatLocalizedNumber(metrics.installCount, locale)} installs
+                  {" · "}
+                  {formatLocalizedNumber(metrics.zipDownloadCount, locale)}{" "}
                   downloads
                 </span>
               </div>

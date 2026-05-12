@@ -4,19 +4,18 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Heart, Layers, PawPrint } from "lucide-react";
+import { useLocale } from "next-intl";
 
 import { petStates } from "@/lib/pet-states";
 import type { PetWithMetrics } from "@/lib/pets";
+import { cn } from "@/lib/utils";
 
-import {
-  CollectionEditor,
-  type EditableCollection,
-} from "@/components/collection-editor";
+import type { EditableCollection } from "@/components/collection-editor";
 import { GalleryReorderGrid } from "@/components/gallery-reorder-grid";
 import { ClaimableBanner, type Submission } from "@/components/my-pets-view";
 import {
-  OwnerCollectionsManager,
   type OwnerCollection,
+  OwnerCollectionsManager,
 } from "@/components/owner-collections-manager";
 import { PetCard } from "@/components/pet-gallery";
 
@@ -98,11 +97,14 @@ export function ProfileTabs(props: ProfileTabsProps) {
   );
 
   const showCollectionsTab = isOwner
-    ? Boolean(collection) || canManageCollections || (ownerCollections && ownerCollections.length > 0)
+    ? Boolean(collection) ||
+      canManageCollections ||
+      (ownerCollections && ownerCollections.length > 0)
     : Boolean(collection) || (ownerCollections && ownerCollections.length > 0);
   const showLikedTab = likedPets.length > 0;
 
   const [tab, setTab] = useState<TabKey>("pets");
+  const isZh = useLocale() === "zh";
 
   // Honor #liked / #collections / #pets so deep-links from notifications
   // and emails land on the right tab.
@@ -173,11 +175,12 @@ export function ProfileTabs(props: ProfileTabsProps) {
           pinnedSet={pinnedSet}
           pinnedCount={pinnedCount}
           maxPins={pinning?.maxPins ?? null}
+          isZh={isZh}
         />
       ) : null}
 
       {tab === "liked" && showLikedTab ? (
-        <LikedPanel pets={likedPets} stateCount={stateCount} />
+        <LikedPanel pets={likedPets} stateCount={stateCount} isZh={isZh} />
       ) : null}
 
       {tab === "collections" && showCollectionsTab ? (
@@ -205,6 +208,7 @@ function PetsPanel({
   pinnedSet,
   pinnedCount,
   maxPins,
+  isZh,
 }: {
   isOwner: boolean;
   publicHandle: string;
@@ -215,6 +219,7 @@ function PetsPanel({
   pinnedSet: Set<string> | null;
   pinnedCount: number;
   maxPins: number | null;
+  isZh: boolean;
 }) {
   if (
     approvedPets.length === 0 &&
@@ -259,7 +264,12 @@ function PetsPanel({
           ) : null}
           {(() => {
             const grid = (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <div
+                className={cn(
+                  "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+                  isZh && "sm:gap-3",
+                )}
+              >
                 {approvedPets.map((pet, index) => (
                   <PetCard
                     key={pet.slug}
@@ -289,7 +299,9 @@ function PetsPanel({
             // with 1 pet just see the regular grid.
             if (isOwner && approvedPets.length >= 2) {
               return (
-                <GalleryReorderGrid pets={approvedPets}>{grid}</GalleryReorderGrid>
+                <GalleryReorderGrid pets={approvedPets}>
+                  {grid}
+                </GalleryReorderGrid>
               );
             }
             return grid;
@@ -309,7 +321,12 @@ function PetsPanel({
               Visible only to you until an admin approves.
             </p>
           </header>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div
+            className={cn(
+              "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+              isZh && "sm:gap-3",
+            )}
+          >
             {pendingSubmissions.map((submission, index) => (
               <PetCard
                 key={submission.id}
@@ -340,7 +357,12 @@ function PetsPanel({
               Visible only to you. Submit a fresh version when ready.
             </p>
           </header>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+          <div
+            className={cn(
+              "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+              isZh && "sm:gap-3",
+            )}
+          >
             {rejectedSubmissions.map((submission, index) => (
               <PetCard
                 key={submission.id}
@@ -395,9 +417,11 @@ function submissionToPet(submission: Submission): PetWithMetrics {
 function LikedPanel({
   pets,
   stateCount,
+  isZh,
 }: {
   pets: PetWithMetrics[];
   stateCount: number;
+  isZh: boolean;
 }) {
   return (
     <section className="space-y-4">
@@ -407,7 +431,12 @@ function LikedPanel({
           install, or unlike.
         </p>
       </header>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div
+        className={cn(
+          "grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+          isZh && "sm:gap-3",
+        )}
+      >
         {pets.map((pet, index) => (
           <PetCard
             key={pet.slug}
@@ -490,10 +519,7 @@ function CollectionsPanel({
               </span>
             </div>
             <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-              <Link
-                href={`/collections/${c.slug}`}
-                className="hover:underline"
-              >
+              <Link href={`/collections/${c.slug}`} className="hover:underline">
                 {c.title}
               </Link>
             </h3>
@@ -530,8 +556,7 @@ function CollectionsPanel({
         </Link>
         <span className="font-mono text-[11px] tracking-[0.18em] text-muted-3 uppercase">
           {collection!.petSlugs.length}{" "}
-          {collection!.petSlugs.length === 1 ? "pet" : "pets"} · @
-          {publicHandle}
+          {collection!.petSlugs.length === 1 ? "pet" : "pets"} · @{publicHandle}
         </span>
       </div>
     </section>

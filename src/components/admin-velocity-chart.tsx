@@ -48,7 +48,11 @@ export function AdminVelocityChart({ data }: Props) {
   return (
     <div className="space-y-3">
       <ChartContainer config={chartConfig} className="h-40 w-full">
-        <BarChart accessibilityLayer data={series} margin={{ left: 0, right: 0, top: 4 }}>
+        <BarChart
+          accessibilityLayer
+          data={series}
+          margin={{ left: 0, right: 0, top: 4 }}
+        >
           <CartesianGrid vertical={false} strokeOpacity={0.2} />
           <XAxis
             dataKey="hour"

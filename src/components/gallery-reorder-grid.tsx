@@ -159,9 +159,7 @@ export function GalleryReorderGrid({ pets, children }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-brand/30 bg-brand-tint/60 px-3 py-2 dark:bg-brand-tint-dark/60">
-        <p className="text-xs text-muted-2">
-          {t("dragInstruction")}
-        </p>
+        <p className="text-xs text-muted-2">{t("dragInstruction")}</p>
         <div className="flex items-center gap-2">
           {error ? (
             <span className="text-xs text-destructive">{error}</span>
@@ -225,8 +223,14 @@ function ReorderItem({
   pet: PetWithMetrics;
   isActive: boolean;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: pet.slug });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: pet.slug });
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,

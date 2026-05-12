@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Plus, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { buildLocaleAlternates } from "@/lib/locale-routing";
 
 import { GithubIcon } from "@/components/github-icon";
@@ -98,7 +99,12 @@ function projectsByCategory(): Record<CategoryKey, Project[]> {
   return out;
 }
 
-export default async function BuiltWithPage() {
+export default async function BuiltWithPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("builtWith");
   const grouped = projectsByCategory();
   const total = builtWithData.projects.length;
@@ -144,7 +150,9 @@ export default async function BuiltWithPage() {
             <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-muted-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1">
                 <Star className="size-3.5" />
-                {t("stats.stars", { total: totalStars.toLocaleString() })}
+                {t("stats.stars", {
+                  total: formatLocalizedNumber(totalStars, locale),
+                })}
               </span>
               <span className="inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1">
                 {t("stats.projects", { total })}
@@ -206,6 +214,7 @@ export default async function BuiltWithPage() {
                 <ProjectCard
                   key={p.slug}
                   project={p}
+                  locale={locale}
                   screenshotAlt={t("card.screenshotAlt", { name: p.name })}
                   siteLabel={t("card.site")}
                 />
@@ -259,10 +268,12 @@ export default async function BuiltWithPage() {
 
 function ProjectCard({
   project,
+  locale,
   screenshotAlt,
   siteLabel,
 }: {
   project: Project;
+  locale: string;
   screenshotAlt: string;
   siteLabel: string;
 }) {
@@ -294,7 +305,7 @@ function ProjectCard({
           {project.stars > 0 ? (
             <span className="inline-flex shrink-0 items-center gap-1 font-mono text-[11px] text-muted-2">
               <Star className="size-3" />
-              {project.stars.toLocaleString()}
+              {formatLocalizedNumber(project.stars, locale)}
             </span>
           ) : null}
         </div>

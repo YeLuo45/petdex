@@ -9,9 +9,11 @@ import {
   type PetCollectionWithPets,
 } from "@/lib/collections";
 import { getDexNumberMap } from "@/lib/dex";
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { buildLocaleAlternates } from "@/lib/locale-routing";
 import { searchPets } from "@/lib/pet-search";
 import { getFeaturedPetsWithMetrics, type PetWithMetrics } from "@/lib/pets";
+import { cn } from "@/lib/utils";
 
 import { CollectionActionMenu } from "@/components/collection-action-menu";
 import { CollectionCover } from "@/components/collection-cover";
@@ -64,6 +66,7 @@ export default async function Home({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const isZh = locale === "zh";
   const t = await getTranslations("home");
 
   // Hand-pick the 3 collections that show on the landing strip in a
@@ -89,6 +92,7 @@ export default async function Home({
       getActiveFeedAds(6),
     ]);
   const totalPets = initialSearch.total;
+  const formattedTotalPets = formatLocalizedNumber(totalPets, locale);
 
   // Plain-object so the server -> client serializer doesn't choke on a
   // Map. Same source of truth either way.
@@ -146,7 +150,7 @@ export default async function Home({
             </h1>
             {locale === "zh" && (
               <p className="text-xs text-amber-300/70 mt-1 tracking-wider">
-                宠物图鉴 · {totalPets}+ 个开源伙伴
+                宠物图鉴 · {formattedTotalPets}+ 个开源伙伴
               </p>
             )}
             <p className="mt-5 max-w-xl text-balance text-base leading-7 text-muted-1 md:text-lg">
@@ -172,7 +176,7 @@ export default async function Home({
             </div>
           </div>
 
-          <HeroPetParade pets={heroPets} />
+          <HeroPetParade pets={heroPets} isZh={isZh} />
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <SubmitCTA className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-inverse px-6 text-sm font-medium text-on-inverse transition hover:bg-inverse-hover">
@@ -198,7 +202,7 @@ export default async function Home({
         </div>
       </section>
 
-      <FeaturedCollections collections={collections} />
+      <FeaturedCollections collections={collections} isZh={isZh} />
 
       <section
         id="gallery"
@@ -221,8 +225,10 @@ export default async function Home({
 
 async function FeaturedCollections({
   collections,
+  isZh,
 }: {
   collections: PetCollectionWithPets[];
+  isZh: boolean;
 }) {
   if (collections.length === 0) return null;
   const t = await getTranslations("home.featuredCollections");
@@ -245,7 +251,12 @@ async function FeaturedCollections({
           {t("viewAll")}
         </Link>
       </div>
-      <div className="grid auto-rows-fr gap-4 md:grid-cols-3">
+      <div
+        className={cn(
+          "grid auto-rows-fr gap-4 md:grid-cols-3",
+          isZh && "sm:gap-2.5",
+        )}
+      >
         {collections.map((collection) => {
           return (
             <article
@@ -293,16 +304,20 @@ async function FeaturedCollections({
 
 type HeroPetParadeProps = {
   pets: PetWithMetrics[];
+  isZh: boolean;
 };
 
-async function HeroPetParade({ pets }: HeroPetParadeProps) {
+async function HeroPetParade({ pets, isZh }: HeroPetParadeProps) {
   if (pets.length === 0) return null;
 
   const t = await getTranslations("home");
 
   return (
     <section
-      className="mt-10 flex flex-wrap items-end justify-center gap-3 md:gap-5"
+      className={cn(
+        "mt-10 flex flex-wrap items-end justify-center gap-3",
+        isZh ? "sm:gap-2 md:gap-2" : "md:gap-5",
+      )}
       aria-label={t("petParadeAria")}
     >
       {pets.map((pet, index) => {

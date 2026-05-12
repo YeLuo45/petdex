@@ -14,6 +14,7 @@ import {
 import { getOwnerCollections } from "@/lib/collections";
 import { db, schema } from "@/lib/db/client";
 import { getMetricsBySlugs } from "@/lib/db/metrics";
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { userIdForHandle } from "@/lib/handles";
 import { getOwnerRank } from "@/lib/leaderboard";
 import { buildLocaleAlternates } from "@/lib/locale-routing";
@@ -88,7 +89,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function UserProfilePage({ params }: PageProps) {
-  const { handle } = await params;
+  const { handle, locale } = await params;
   const requestedHandle = handle.toLowerCase();
   const ownerId = await userIdForHandle(handle);
   if (!ownerId) notFound();
@@ -366,13 +367,13 @@ export default async function UserProfilePage({ params }: PageProps) {
                 {totalLikes > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
                     <Heart className="size-3" />
-                    {totalLikes}
+                    {formatLocalizedNumber(totalLikes, locale)}
                   </span>
                 ) : null}
                 {totalInstalls > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
                     <TerminalSquare className="size-3" />
-                    {totalInstalls} installs
+                    {formatLocalizedNumber(totalInstalls, locale)} installs
                   </span>
                 ) : null}
                 {memberSince ? (
@@ -445,7 +446,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               </div>
               {featuredPets.length === 1 ? (
                 <div className="relative">
-                  <FeaturedPin pet={featuredPets[0]} />
+                  <FeaturedPin pet={featuredPets[0]} locale={locale} />
                   {isOwner ? (
                     <div className="absolute top-4 right-4 z-40">
                       <ProfilePinButton
@@ -513,7 +514,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   );
 }
 
-function FeaturedPin({ pet }: { pet: PetWithMetrics }) {
+function FeaturedPin({ pet, locale }: { pet: PetWithMetrics; locale: string }) {
   return (
     <Link
       href={`/pets/${pet.slug}`}
@@ -542,13 +543,13 @@ function FeaturedPin({ pet }: { pet: PetWithMetrics }) {
           {pet.metrics.likeCount > 0 ? (
             <span className="inline-flex items-center gap-1.5">
               <Heart className="size-3" />
-              {pet.metrics.likeCount}
+              {formatLocalizedNumber(pet.metrics.likeCount, locale)}
             </span>
           ) : null}
           {pet.metrics.installCount > 0 ? (
             <span className="inline-flex items-center gap-1.5">
               <TerminalSquare className="size-3" />
-              {pet.metrics.installCount} installs
+              {formatLocalizedNumber(pet.metrics.installCount, locale)} installs
             </span>
           ) : null}
           <span>{pet.kind}</span>

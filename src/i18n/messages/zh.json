@@ -1745,8 +1745,8 @@
   "installCompact": {
     "seeGuide": "查看完整安装指南",
     "seeGuide__fixme": true,
-    "themeCodexLabel": "用此宠物配色 Codex",
-    "themeCodexHint": "重绘 Codex Desktop"
+    "themeCodexLabel": "套用配色",
+    "themeCodexHint": "Codex 主题"
   },
   "desktopAnnouncement": {
     "eyebrow": "新功能 · 桌面应用",
@@ -1800,5 +1800,24 @@
     "editAria": "编辑宠物",
     "evidenceAssets": "素材",
     "evidencePolicy": "政策"
+  },
+  "sticker": {
+    "ctaWeChat": "保存为微信表情",
+    "ctaGeneric": "保存为表情",
+    "hintWeChat": "动态 WebP · 微信 / WhatsApp / Discord 通用",
+    "hintGeneric": "动态 WebP · 微信 / WhatsApp / Discord 通用",
+    "recommendedTag": "推荐",
+    "downloadAnimated": "下载动画 (WebP)",
+    "downloadAnimatedDesc": "240×240 透明动画 · 长按即可加到表情",
+    "downloadPack": "WhatsApp 表情包 (9 张)",
+    "downloadPackDesc": "完整动画包 · 含 9 个状态 · zip 下载",
+    "downloadPng": "下载静态 PNG",
+    "downloadPngDesc": "240×240 第一帧",
+    "copyImage": "复制图片到剪贴板",
+    "copyImageDesc": "直接粘贴到任意聊天",
+    "preview": "预览",
+    "previewDesc": "在新标签页打开",
+    "howToWeChat": "微信用法：长按图片 → 添加到表情 · WhatsApp：用 Sticker Maker 导入 zip",
+    "errorGeneric": "出错了，请重试"
   }
 }

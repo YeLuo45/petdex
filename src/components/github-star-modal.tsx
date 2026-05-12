@@ -77,12 +77,8 @@ export function GithubStarModal({ onClose }: GithubStarModalProps) {
           <h2 className="text-xl font-semibold tracking-tight text-foreground">
             {t("title")}
           </h2>
-          <p className="text-sm leading-6 text-muted-2">
-            {t("description")}
-          </p>
-          <p className="text-sm leading-6 text-muted-2">
-            {t("note")}
-          </p>
+          <p className="text-sm leading-6 text-muted-2">{t("description")}</p>
+          <p className="text-sm leading-6 text-muted-2">{t("note")}</p>
 
           <div className="flex items-center gap-2 pt-1">
             <a

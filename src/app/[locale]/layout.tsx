@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { Analytics } from "@vercel/analytics/next";
@@ -48,6 +49,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     notFound();
   }
 
+  const requestHeaders = await headers();
+  const userAgent = requestHeaders.get("user-agent") ?? "";
+  const isWeChat = userAgent.includes("MicroMessenger");
+
   const t = await getTranslations({ locale, namespace: "metadata.root" });
 
   return {
@@ -73,7 +78,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: SITE_URL,
       siteName: "Petdex",
       type: "website",
-      images: [{ url: "/og.png", width: 1200, height: 630, alt: "Petdex" }],
+      images: [
+        isWeChat
+          ? { url: "/og-wechat.png", width: 1200, height: 1200, alt: "Petdex" }
+          : { url: "/og.png", width: 1200, height: 630, alt: "Petdex" },
+      ],
     },
     twitter: {
       card: "summary_large_image",

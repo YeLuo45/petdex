@@ -8,6 +8,7 @@ import { getTranslations } from "next-intl/server";
 import { getCaughtSlugSet } from "@/lib/catch-status";
 import { getCollection } from "@/lib/collections";
 import { getDexNumberMap } from "@/lib/dex";
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { buildLocaleAlternates } from "@/lib/locale-routing";
 import { resolveOwnerCredits } from "@/lib/owner-credit";
 
@@ -63,7 +64,7 @@ export async function generateMetadata({ params }: PageProps) {
 }
 
 export default async function CollectionPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const collection = await getCollection(slug);
   if (!collection) notFound();
   const t = await getTranslations("collectionDetail");
@@ -176,13 +177,13 @@ export default async function CollectionPage({ params }: PageProps) {
                 {totalLikes > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
                     <Heart className="size-3" />
-                    {totalLikes}
+                    {formatLocalizedNumber(totalLikes, locale)}
                   </span>
                 ) : null}
                 {totalInstalls > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
                     <TerminalSquare className="size-3" />
-                    {totalInstalls} installs
+                    {formatLocalizedNumber(totalInstalls, locale)} installs
                   </span>
                 ) : null}
               </div>

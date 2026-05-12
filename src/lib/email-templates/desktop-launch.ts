@@ -59,11 +59,7 @@ export function renderDesktopLaunchEmail(
   // Sample bubbles — same strings the real desktop UI renders. Kept
   // English across locales because they ARE the literal output of
   // the agent hooks (which run in their own locale-agnostic flow).
-  const bubbleSamples = [
-    "Reading server.ts",
-    "Editing main.zig",
-    "Done.",
-  ];
+  const bubbleSamples = ["Reading server.ts", "Editing main.zig", "Done."];
 
   const agents = ["Claude Code", "Codex CLI", "OpenCode", "Gemini CLI"];
 

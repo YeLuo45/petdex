@@ -5,6 +5,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useAuth, useClerk } from "@clerk/nextjs";
 import { track } from "@vercel/analytics";
 import { Heart } from "lucide-react";
+import { useLocale } from "next-intl";
+
+import { formatLocalizedNumber } from "@/lib/format-number";
 
 type LikeButtonProps = {
   slug: string;
@@ -16,6 +19,7 @@ export function LikeButton({ slug, initialCount }: LikeButtonProps) {
   const [liked, setLiked] = useState(false);
   const [likeStateLoading, setLikeStateLoading] = useState(false);
   const [pending, start] = useTransition();
+  const locale = useLocale();
   const { isLoaded, isSignedIn } = useAuth();
   const clerk = useClerk();
   const loadVersionRef = useRef(0);
@@ -125,7 +129,9 @@ export function LikeButton({ slug, initialCount }: LikeButtonProps) {
       <Heart
         className={`size-4 transition ${liked ? "fill-rose-500 text-rose-500" : ""}`}
       />
-      <span className="font-mono text-xs tracking-[0.08em]">{count}</span>
+      <span className="font-mono text-xs tracking-[0.08em]">
+        {formatLocalizedNumber(count, locale)}
+      </span>
     </button>
   );
 }

@@ -53,8 +53,7 @@ export function OwnerCollectionsManager({
             {t("title")}
           </p>
           <p className="mt-1 text-sm text-muted-3">
-            {t("description")}{" "}
-            {personalCount}/{maxCollections} used.
+            {t("description")} {personalCount}/{maxCollections} used.
           </p>
         </div>
         <button
@@ -86,8 +85,8 @@ export function OwnerCollectionsManager({
       <div className="space-y-3">
         {collections.length === 0 && !creating ? (
           <div className="rounded-3xl border border-dashed border-border-base bg-surface/60 p-8 text-center text-sm text-muted-2">
-            No collections yet. Group your pets into themed sets that show up
-            on your profile.
+            No collections yet. Group your pets into themed sets that show up on
+            your profile.
           </div>
         ) : null}
         {collections.map((c) => {
@@ -343,7 +342,10 @@ function CollectionForm({
 
       <fieldset>
         <legend className="font-mono text-[10px] tracking-[0.18em] text-muted-3 uppercase">
-          {t("petsSelected", { selected: selected.size, total: approvedPets.length })}
+          {t("petsSelected", {
+            selected: selected.size,
+            total: approvedPets.length,
+          })}
         </legend>
         <div className="mt-2 grid max-h-72 grid-cols-2 gap-2 overflow-y-auto rounded-2xl border border-border-base bg-surface p-2 sm:grid-cols-3 md:grid-cols-4">
           {approvedPets.map((pet) => {

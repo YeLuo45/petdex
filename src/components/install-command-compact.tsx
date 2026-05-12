@@ -44,20 +44,20 @@ export function InstallCommandCompact({
         <button
           type="button"
           onClick={() => setThemeOpen(true)}
-          className="group/theme inline-flex h-12 items-center gap-2 rounded-2xl border border-border-base bg-surface/80 px-3 text-left text-[12px] text-foreground backdrop-blur transition hover:border-brand-light/40 hover:bg-surface md:px-4"
+          className="group/theme inline-flex h-12 max-w-full items-center gap-2 overflow-hidden rounded-2xl border border-border-base bg-surface/80 px-3 text-left text-[12px] text-foreground backdrop-blur transition hover:border-brand-light/40 hover:bg-surface md:px-4"
         >
           <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-surface ring-1 ring-border-base/40">
             <CodexLogo className="size-4" />
           </span>
-          <span className="flex flex-col leading-tight">
-            <span className="text-[12px] font-semibold text-foreground">
+          <span className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-[12px] font-semibold text-foreground">
               {t("themeCodexLabel")}
             </span>
-            <span className="text-[10px] text-muted-3">
+            <span className="truncate text-[10px] text-muted-3">
               {t("themeCodexHint")}
             </span>
           </span>
-          <Palette className="size-3.5 text-muted-3 transition group-hover/theme:text-brand" />
+          <Palette className="size-3.5 shrink-0 text-muted-3 transition group-hover/theme:text-brand" />
         </button>
       </div>
       <Link

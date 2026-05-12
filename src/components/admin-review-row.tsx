@@ -594,7 +594,10 @@ function AutomationEvidence({ review }: { review: SubmissionReview | null }) {
           </p>
         ) : null}
         {checks.assets?.reasons?.length ? (
-          <EvidenceGroup title={t("evidenceAssets")} items={checks.assets.reasons} />
+          <EvidenceGroup
+            title={t("evidenceAssets")}
+            items={checks.assets.reasons}
+          />
         ) : null}
         {checks.policy?.flags?.length ? (
           <EvidenceGroup
@@ -605,7 +608,10 @@ function AutomationEvidence({ review }: { review: SubmissionReview | null }) {
             )}
           />
         ) : checks.policy?.reasons?.length ? (
-          <EvidenceGroup title={t("evidencePolicy")} items={checks.policy.reasons} />
+          <EvidenceGroup
+            title={t("evidencePolicy")}
+            items={checks.policy.reasons}
+          />
         ) : null}
         {duplicateMatches.length > 0 ? (
           <DuplicateEvidenceGroup matches={duplicateMatches} />

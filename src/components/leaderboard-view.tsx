@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Heart, Sparkles, TerminalSquare, Trophy, Users } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { formatLocalizedNumber } from "@/lib/format-number";
 import type { LeaderboardMetric, LeaderboardRow } from "@/lib/leaderboard";
 
 type CreditMap = Record<
@@ -91,6 +92,7 @@ export function LeaderboardView({
   rows,
 }: LeaderboardViewProps) {
   const t = useTranslations("leaderboard");
+  const locale = useLocale();
   const router = useRouter();
   const params = useSearchParams();
 
@@ -166,6 +168,7 @@ export function LeaderboardView({
                 row={row}
                 unit={t(activeTab.unitKey)}
                 credit={credits[row.ownerId]}
+                locale={locale}
                 showSecondaryStats={active !== "collectors"}
                 thumbs={thumbs}
               />
@@ -182,6 +185,7 @@ function LeaderboardRowItem({
   row,
   unit,
   credit,
+  locale,
   showSecondaryStats,
   thumbs,
 }: {
@@ -189,6 +193,7 @@ function LeaderboardRowItem({
   row: LeaderboardRow;
   unit: string;
   credit: CreditMap[string] | undefined;
+  locale: string;
   showSecondaryStats: boolean;
   thumbs: LeaderboardPetThumb[];
 }) {
@@ -265,19 +270,19 @@ function LeaderboardRowItem({
           <div className="hidden items-center gap-4 text-[11px] text-muted-3 sm:flex">
             <span>
               <span className="font-mono text-foreground">
-                {row.approvedCount}
+                {formatLocalizedNumber(row.approvedCount, locale)}
               </span>{" "}
               {t("secondaryStats.pets")}
             </span>
             <span>
               <span className="font-mono text-foreground">
-                {row.totalLikes}
+                {formatLocalizedNumber(row.totalLikes, locale)}
               </span>{" "}
               {t("secondaryStats.likes")}
             </span>
             <span>
               <span className="font-mono text-foreground">
-                {row.totalInstalls}
+                {formatLocalizedNumber(row.totalInstalls, locale)}
               </span>{" "}
               {t("secondaryStats.installs")}
             </span>
@@ -286,7 +291,7 @@ function LeaderboardRowItem({
 
         <div className="shrink-0 text-right">
           <span className="font-mono text-lg font-semibold text-foreground">
-            {row.value}
+            {formatLocalizedNumber(row.value, locale)}
           </span>
           <span className="ml-1 text-[10px] tracking-[0.12em] text-muted-3 uppercase">
             {unit}

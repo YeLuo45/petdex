@@ -103,9 +103,7 @@ function luminance(hex: string): number {
     const v = channel / 255;
     return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
   };
-  return (
-    0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
-  );
+  return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b);
 }
 
 function contrastRatio(bg: string, fg: string): number {
@@ -122,14 +120,23 @@ const NEAR_WHITE = "#f7f7f8";
 const NEAR_BLACK = "#1a1a1e";
 
 function makeBlock(accent: string, mode: "light" | "dark"): CodexThemeBlock {
-  const surface = mode === "light" ? mix(accent, NEAR_WHITE, 0.92) : mix(accent, NEAR_BLACK, 0.85);
+  const surface =
+    mode === "light"
+      ? mix(accent, NEAR_WHITE, 0.92)
+      : mix(accent, NEAR_BLACK, 0.85);
   const ink = mode === "light" ? BLACK : NEAR_WHITE;
   // Diff colors: shift accent hue toward green/red without losing the
   // pet's signature tint. Mixing with pure colors at a moderate ratio
   // keeps the palette cohesive instead of looking like the default
   // VS Code green/red on top of a custom accent.
-  const diffAdded = mode === "light" ? mix(accent, "#1f9d55", 0.55) : mix(accent, "#22c55e", 0.55);
-  const diffRemoved = mode === "light" ? mix(accent, "#c53030", 0.55) : mix(accent, "#ef4444", 0.55);
+  const diffAdded =
+    mode === "light"
+      ? mix(accent, "#1f9d55", 0.55)
+      : mix(accent, "#22c55e", 0.55);
+  const diffRemoved =
+    mode === "light"
+      ? mix(accent, "#c53030", 0.55)
+      : mix(accent, "#ef4444", 0.55);
   const skill = mix(accent, mode === "light" ? "#2563eb" : "#60a5fa", 0.4);
 
   return {
@@ -171,8 +178,6 @@ export function buildCodexTheme(dominantColor: string): CodexTheme {
 // expose the two variants as standalone strings rather than a combined
 // JSON so each can be copied and pasted directly without the user
 // hand-extracting one half.
-export function serializeCodexThemeVariant(
-  variant: CodexThemeVariant,
-): string {
+export function serializeCodexThemeVariant(variant: CodexThemeVariant): string {
   return `codex-theme-v1:${JSON.stringify(variant)}`;
 }

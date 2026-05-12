@@ -188,10 +188,9 @@ export async function getOwnerCollections(
     const result = await db
       .select({
         ...getTableColumns(schema.petCollections),
-        petCount:
-          dsql<number>`count(${schema.petCollectionItems.petSlug})`.as(
-            "pet_count",
-          ),
+        petCount: dsql<number>`count(${schema.petCollectionItems.petSlug})`.as(
+          "pet_count",
+        ),
       })
       .from(schema.petCollections)
       .leftJoin(

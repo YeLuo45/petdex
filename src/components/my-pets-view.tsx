@@ -14,11 +14,12 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
+import { formatLocalizedNumber } from "@/lib/format-number";
 import { petStates } from "@/lib/pet-states";
 import type { PetWithMetrics } from "@/lib/pets";
-
-import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 import {
   CollectionEditor,
@@ -237,6 +238,7 @@ function AlbumProgress({
 // has no likes yet so the empty state on the album section above is
 // the single CTA.
 function LikedPets({ pets }: { pets: PetWithMetrics[] }) {
+  const isZh = useLocale() === "zh";
   if (pets.length === 0) return null;
 
   const stateCount = petStates.length;
@@ -259,7 +261,12 @@ function LikedPets({ pets }: { pets: PetWithMetrics[] }) {
           </p>
         </div>
       </header>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div
+        className={cn(
+          "grid gap-4 sm:grid-cols-2 lg:grid-cols-3",
+          isZh && "sm:gap-3",
+        )}
+      >
         {pets.map((pet, index) => (
           <PetCard
             key={pet.slug}
@@ -279,6 +286,7 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
   const [isPending, startTransition] = useTransition();
   const [withdrawn, setWithdrawn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locale = useLocale();
 
   if (withdrawn) {
     return (
@@ -418,18 +426,18 @@ export function SubmissionCard({ submission }: { submission: Submission }) {
             {likeCount > 0 ? (
               <span className="inline-flex items-center gap-1">
                 <Heart className="size-3" />
-                {likeCount} likes
+                {formatLocalizedNumber(likeCount, locale)} likes
               </span>
             ) : null}
             {installCount > 0 ? (
               <span className="inline-flex items-center gap-1">
                 <TerminalSquare className="size-3" />
-                {installCount} installs
+                {formatLocalizedNumber(installCount, locale)} installs
               </span>
             ) : null}
             {zipDownloadCount > 0 ? (
               <span className="inline-flex items-center gap-1">
-                ↓ {zipDownloadCount} zips
+                ↓ {formatLocalizedNumber(zipDownloadCount, locale)} zips
               </span>
             ) : null}
           </div>

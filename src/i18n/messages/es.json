@@ -1540,5 +1540,24 @@
     "editAria": "Editar mascota",
     "evidenceAssets": "Archivos",
     "evidencePolicy": "Política"
+  },
+  "sticker": {
+    "ctaWeChat": "Guardar para WeChat",
+    "ctaGeneric": "Guardar como sticker",
+    "hintWeChat": "WebP animado · WeChat, WhatsApp, Discord",
+    "hintGeneric": "WebP animado · WeChat, WhatsApp, Discord",
+    "recommendedTag": "Mejor",
+    "downloadAnimated": "Descargar animado (WebP)",
+    "downloadAnimatedDesc": "240×240 en loop · mantén presionado para guardar",
+    "downloadPack": "Pack de WhatsApp (9 stickers)",
+    "downloadPackDesc": "Pack animado completo · 9 estados · zip",
+    "downloadPng": "Descargar PNG estático",
+    "downloadPngDesc": "240×240 primer frame",
+    "copyImage": "Copiar imagen al portapapeles",
+    "copyImageDesc": "Pega directo en cualquier chat",
+    "preview": "Previsualizar",
+    "previewDesc": "Abrir en otra pestaña",
+    "howToWeChat": "WeChat: mantén presionada → Añadir a favoritos · WhatsApp: importa el zip con Sticker Maker",
+    "errorGeneric": "Algo salió mal, intenta de nuevo"
   }
 }

@@ -248,10 +248,7 @@ export function FeedbackWidget() {
           const nextBottom = clampBottom(startBottom - (ev.clientY - startY));
           setBottomOffset(nextBottom);
           suppressClickUntilRef.current = Date.now() + 350;
-          safeSetItem(
-            FEEDBACK_POSITION_KEY,
-            String(nextBottom),
-          );
+          safeSetItem(FEEDBACK_POSITION_KEY, String(nextBottom));
         }
       }
 
