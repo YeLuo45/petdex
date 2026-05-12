@@ -144,6 +144,11 @@ export default async function Home({
             <h1 className="mt-3 text-[48px] leading-[0.98] font-semibold tracking-tight md:text-[80px]">
               {t("title")}
             </h1>
+            {locale === "zh" && (
+              <p className="text-xs text-amber-300/70 mt-1 tracking-wider">
+                宠物图鉴 · {totalPets}+ 个开源伙伴
+              </p>
+            )}
             <p className="mt-5 max-w-xl text-balance text-base leading-7 text-muted-1 md:text-lg">
               {t.rich("tagline", {
                 totalPets,
@@ -247,10 +252,7 @@ async function FeaturedCollections({
               key={collection.slug}
               className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-border-base bg-surface/80 transition hover:border-border-strong hover:shadow-xl hover:shadow-blue-950/10 has-[[aria-expanded=true]]:z-30"
             >
-              <Link
-                href={`/collections/${collection.slug}`}
-                className="block"
-              >
+              <Link href={`/collections/${collection.slug}`} className="block">
                 <CollectionCover
                   pets={collection.pets}
                   coverSlug={collection.coverPetSlug}

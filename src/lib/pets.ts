@@ -5,7 +5,7 @@
 
 import { cache } from "react";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import { db, schema } from "@/lib/db/client";
 import {
@@ -87,6 +87,19 @@ export async function getAllApprovedPets(): Promise<PetdexPet[]> {
     .select()
     .from(schema.submittedPets)
     .where(eq(schema.submittedPets.status, "approved"));
+  return rows.map(rowToPet);
+}
+
+export async function getLatestApprovedPets(limit = 5): Promise<PetdexPet[]> {
+  const rows = await db
+    .select()
+    .from(schema.submittedPets)
+    .where(eq(schema.submittedPets.status, "approved"))
+    .orderBy(
+      desc(schema.submittedPets.approvedAt),
+      desc(schema.submittedPets.createdAt),
+    )
+    .limit(limit);
   return rows.map(rowToPet);
 }
 

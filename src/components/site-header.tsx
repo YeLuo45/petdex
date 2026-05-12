@@ -16,7 +16,7 @@ import {
   UploadSimpleIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react";
-import { ExternalLink, Menu, X } from "lucide-react";
+import { Bell, ExternalLink, Menu, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { isAdminClientSafe } from "@/lib/admin";
@@ -261,6 +261,15 @@ export function SiteHeader({ hideSubmitCta = false }: SiteHeaderProps) {
               >
                 {t("submitCta")}
               </SubmitCTA>
+            )}
+            {currentLocale === "zh" && (
+              <div
+                className="relative hidden md:flex items-center justify-center"
+                title="社区有新动态 New community activity"
+              >
+                <Bell className="w-4 h-4 text-muted-foreground" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" />
+              </div>
             )}
             <GithubStarsLink
               className={cn(

@@ -16,6 +16,8 @@ import { FeedbackWidget } from "@/components/feedback-widget";
 import { HeaderStateProvider } from "@/components/header-state-provider";
 import { ProfileAnnouncementModal } from "@/components/profile-announcement-modal";
 import { AppProviders } from "@/components/theme-providers";
+import { FloatingActionCluster } from "@/components/zh/floating-action-cluster";
+import { TopPromoStrip } from "@/components/zh/top-promo-strip";
 
 import { hasLocale, locales } from "@/i18n/config";
 
@@ -93,6 +95,8 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
   const messages = await getMessages();
 
+  const isZh = locale === "zh";
+
   return (
     <html
       lang={locale}
@@ -102,9 +106,11 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <NextIntlClientProvider messages={messages}>
           <AppProviders>
+            {isZh && <TopPromoStrip />}
             <HeaderStateProvider>
-              {children}
+              <div className={isZh ? "pt-8" : undefined}>{children}</div>
               <FeedbackWidget />
+              {isZh && <FloatingActionCluster />}
               <AnnouncementQueue />
               <ProfileAnnouncementModal />
               <Analytics />

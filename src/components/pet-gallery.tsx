@@ -12,7 +12,6 @@ import {
 } from "react";
 
 import { track } from "@vercel/analytics";
-import { useTranslations } from "next-intl";
 import {
   Check,
   CheckCircle2,
@@ -22,6 +21,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
 import type { PublicFeedAd } from "@/lib/ads/queries";
 import { COLOR_FAMILIES, type ColorFamily } from "@/lib/color-families";
@@ -58,6 +58,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Toggle } from "@/components/ui/toggle";
+import { PetBadge } from "@/components/zh/pet-badge";
+import { getDeterministicBadges } from "@/components/zh/use-pet-badges";
 
 type Facets = {
   kinds: Record<string, number>;
@@ -821,6 +823,7 @@ function PetCardImpl({
   pinState,
 }: PetCardProps) {
   const t = useTranslations("gallery");
+  const locale = useLocale();
   const dexLabel =
     dexNumber != null
       ? dexNumber < 1000
@@ -881,6 +884,15 @@ function PetCardImpl({
             scale={0.7}
             label={`${pet.displayName} animated`}
           />
+          {locale === "zh"
+            ? getDeterministicBadges(pet.slug, installCount).map((badge) => (
+                <PetBadge
+                  key={`${badge.variant}-${badge.position}`}
+                  variant={badge.variant}
+                  position={badge.position}
+                />
+              ))
+            : null}
           {installCount > 0 ? (
             <span className="pointer-events-none absolute right-5 bottom-2 font-mono text-[10px] tracking-[0.22em] text-muted-4 uppercase">
               {compactNumber(installCount)} install

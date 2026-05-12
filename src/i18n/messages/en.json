@@ -1540,5 +1540,15 @@
     "editAria": "Edit pet",
     "evidenceAssets": "Assets",
     "evidencePolicy": "Policy"
+  },
+  "zhChrome": {
+    "promoNewDrop": "NEW DROP",
+    "promoLimited": "LIMITED",
+    "promoFallback": "Welcome to Petdex",
+    "actionInstall": "Install",
+    "actionShare": "Share",
+    "actionCommunity": "Community",
+    "copiedInstall": "Copied!",
+    "copiedLink": "Link copied!"
   }
 }
