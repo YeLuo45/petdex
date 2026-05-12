@@ -11,6 +11,7 @@
 // Single-frame export (the default 'idle' caller) collapses to a static
 // PNG via the same pipeline by skipping the animation envelope.
 
+import { applyPalette, GIFEncoder, quantize } from "gifenc";
 import sharp from "sharp";
 
 import { defaultPetState, type PetStateId, petStates } from "@/lib/pet-states";
@@ -76,52 +77,68 @@ async function extractRowFrames(
   return out;
 }
 
-// Stack frames vertically into a single tall image, then sharp re-reads
-// it as a multi-page input by setting pageHeight. This is the documented
-// path for producing animated WebP from arbitrary frame buffers via sharp
-// without a separate gif/webp encoder dependency.
+// Encode an animated WebP from N frame buffers.
+//
+// Sharp does not encode animated WebP from raw pixel buffers: setting
+// `pages` / `pageHeight` on raw input throws `vips_image_get: field
+// "n-pages" not found`, and stacking frames into a tall canvas + writing
+// WebP collapses to a single static page (Animation: 0 in webpinfo).
+// That bug surfaced in WhatsApp stickers showing as a vertical column of
+// repeated frames after the first ship.
+//
+// Working pipeline:
+//   1) Resize each frame to (size × size) RAW RGBA via sharp
+//   2) Build an animated GIF with gifenc (pure JS, transparent palette)
+//   3) Re-read the GIF with sharp({ animated: true }) — sharp DOES treat
+//      animated GIF as multi-page input — and re-encode as animated WebP
+//
+// The intermediate GIF is throwaway. WebP output ends up animated, alpha
+// preserved, and well under WhatsApp's 500KB per-sticker cap.
 async function buildAnimatedWebp(
   frames: Buffer[],
   size: number,
   delayMs: number,
 ): Promise<Buffer> {
-  // Resize each frame to target size first. Without this the composite
-  // uses the source 192x208 cells and the encoder pads each page weirdly.
-  const resized = await Promise.all(
+  const channels = 4;
+  const frameByteLength = size * size * channels;
+
+  // Step 1: resize each frame and pull raw RGBA.
+  const rawFrames = await Promise.all(
     frames.map((b) =>
-      sharp(b).resize(size, size, RESIZE_OPTS).png().toBuffer(),
+      sharp(b).resize(size, size, RESIZE_OPTS).ensureAlpha().raw().toBuffer(),
     ),
   );
-  const resizedComposites = resized.map((input, i) => ({
-    input,
-    top: i * size,
-    left: 0,
-  }));
 
-  const stacked = await sharp({
-    create: {
-      width: size,
-      height: size * frames.length,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite(resizedComposites)
-    .png()
-    .toBuffer();
+  for (const buf of rawFrames) {
+    if (buf.length !== frameByteLength) {
+      throw new Error(
+        `frame byte length mismatch: got ${buf.length}, expected ${frameByteLength}`,
+      );
+    }
+  }
 
-  // sharp does accept pageHeight at the input options level even though the
-  // public types only declare it on Raw. Cast to keep tsc happy without
-  // muddying the call site with @ts-expect-error.
-  const animInput = sharp(stacked, {
-    pages: -1,
-    pageHeight: size,
-  } as sharp.SharpOptions & { pageHeight?: number });
+  // Step 2: encode an animated GIF with gifenc. We palettize per frame
+  // so transparent pixels stay transparent (palette index 0).
+  const gif = GIFEncoder();
+  for (const buf of rawFrames) {
+    const u8 = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+    const palette = quantize(u8, 256, { format: "rgba4444" });
+    const indexed = applyPalette(u8, palette, "rgba4444");
+    gif.writeFrame(indexed, size, size, {
+      palette,
+      delay: delayMs,
+      transparent: true,
+      transparentIndex: 0,
+      dispose: 2,
+    });
+  }
+  gif.finish();
+  const gifBuf = Buffer.from(gif.bytes());
 
-  return await animInput
+  // Step 3: re-read the GIF as multi-page and emit animated WebP.
+  return await sharp(gifBuf, { animated: true })
     .webp({
       loop: 0,
-      delay: delayMs,
       quality: 80,
       effort: 4,
     })
