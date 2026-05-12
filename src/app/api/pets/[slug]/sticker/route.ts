@@ -1,14 +1,18 @@
-// Sticker download endpoint. Returns:
-//   - 240x240 animated WebP of a single pet state (default: idle)
-//   - falls back to PNG for single-frame states
+// Sticker download endpoint. Returns one of:
+//   - 240x240 animated WebP (default; best quality + alpha)
+//   - 240x240 animated GIF  (?format=gif; for WhatsApp Desktop, Slack)
+//   - 240x240 static PNG    (?format=png; for platforms blocking animated)
 //
 // Query params:
 //   ?state=idle|waving|jumping|...   (default 'idle')
+//   ?format=webp|gif|png             (default 'webp')
 //   ?download=1                       (forces Content-Disposition: attachment)
 //
-// Output works as-is in WeChat (long-press → add to favorites), WhatsApp
-// individual send, Discord/Slack uploads, and Telegram inline images.
-// For full WhatsApp packs, see /api/pets/[slug]/wastickers.zip.
+// Why GIF as a first-class format: WhatsApp Desktop and WhatsApp Web only
+// render the first frame of imported animated WebP stickers (mobile clients
+// animate them correctly). GIF inline messages animate everywhere.
+//
+// For full WhatsApp packs, see /api/pets/[slug]/wastickers.
 
 import { NextResponse } from "next/server";
 
@@ -16,7 +20,7 @@ import { eq } from "drizzle-orm";
 
 import { db, schema } from "@/lib/db/client";
 import type { PetStateId } from "@/lib/pet-states";
-import { renderSticker } from "@/lib/sticker-renderer";
+import { renderSticker, type StickerFormat } from "@/lib/sticker-renderer";
 import { isAllowedAssetUrl } from "@/lib/url-allowlist";
 
 export const runtime = "nodejs";
@@ -42,6 +46,15 @@ function parseState(value: string | null): PetStateId | undefined {
     : undefined;
 }
 
+const VALID_FORMATS: StickerFormat[] = ["webp", "gif", "png"];
+
+function parseFormat(value: string | null): StickerFormat | undefined {
+  if (!value) return undefined;
+  return VALID_FORMATS.includes(value as StickerFormat)
+    ? (value as StickerFormat)
+    : undefined;
+}
+
 export async function GET(
   req: Request,
   ctx: { params: Promise<{ slug: string }> },
@@ -49,6 +62,7 @@ export async function GET(
   const { slug } = await ctx.params;
   const url = new URL(req.url);
   const state = parseState(url.searchParams.get("state"));
+  const format = parseFormat(url.searchParams.get("format"));
   const isDownload = url.searchParams.get("download") === "1";
 
   const pet = await db.query.submittedPets.findFirst({
@@ -66,7 +80,7 @@ export async function GET(
 
   let result: Awaited<ReturnType<typeof renderSticker>>;
   try {
-    result = await renderSticker(pet.spritesheetUrl, { state });
+    result = await renderSticker(pet.spritesheetUrl, { state, format });
   } catch (err) {
     const message =
       err instanceof Error && err.message.startsWith("upstream")
@@ -77,7 +91,12 @@ export async function GET(
     });
   }
 
-  const ext = result.contentType === "image/webp" ? "webp" : "png";
+  const extByType: Record<typeof result.contentType, string> = {
+    "image/webp": "webp",
+    "image/gif": "gif",
+    "image/png": "png",
+  };
+  const ext = extByType[result.contentType];
   const stateSuffix = state ? `-${state}` : "";
   const filename = `${slug}${stateSuffix}-sticker.${ext}`;
 

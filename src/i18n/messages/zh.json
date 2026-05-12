@@ -1804,11 +1804,14 @@
   "sticker": {
     "ctaWeChat": "保存为微信表情",
     "ctaGeneric": "保存为表情",
+    "ctaShort": "保存表情",
     "hintWeChat": "动态 WebP · 微信 / WhatsApp / Discord 通用",
     "hintGeneric": "动态 WebP · 微信 / WhatsApp / Discord 通用",
     "recommendedTag": "推荐",
     "downloadAnimated": "下载动画 (WebP)",
-    "downloadAnimatedDesc": "240×240 透明动画 · 长按即可加到表情",
+    "downloadAnimatedDesc": "240×240 透明动画 · 微信、Discord 完美支持",
+    "downloadGif": "下载 GIF",
+    "downloadGifDesc": "240×240 动图 · WhatsApp Desktop / Slack 推荐",
     "downloadPack": "WhatsApp 表情包 (9 张)",
     "downloadPackDesc": "完整动画包 · 含 9 个状态 · zip 下载",
     "downloadPng": "下载静态 PNG",
@@ -1817,7 +1820,9 @@
     "copyImageDesc": "直接粘贴到任意聊天",
     "preview": "预览",
     "previewDesc": "在新标签页打开",
-    "howToWeChat": "微信用法：长按图片 → 添加到表情 · WhatsApp：用 Sticker Maker 导入 zip",
+    "howToWeChat": "微信：长按图片 → 添加到表情",
+    "howToWhatsApp": "WhatsApp：用 Sticker Maker 应用导入 zip 包",
+    "desktopNote": "WhatsApp 桌面版只显示首帧 · 手机端正常播放动画",
     "errorGeneric": "出错了，请重试"
   }
 }

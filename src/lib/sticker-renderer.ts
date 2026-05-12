@@ -31,14 +31,17 @@ const RESIZE_OPTS = {
   background: { r: 0, g: 0, b: 0, alpha: 0 },
 };
 
+export type StickerFormat = "webp" | "gif" | "png";
+
 export type StickerOptions = {
   state?: PetStateId;
   size?: number;
+  format?: StickerFormat;
 };
 
 export type StickerOutput = {
   buffer: Buffer;
-  contentType: "image/webp" | "image/png";
+  contentType: "image/webp" | "image/gif" | "image/png";
   isAnimated: boolean;
   frameCount: number;
 };
@@ -77,24 +80,17 @@ async function extractRowFrames(
   return out;
 }
 
-// Encode an animated WebP from N frame buffers.
+// Encode an animated GIF from N frame buffers via gifenc.
 //
-// Sharp does not encode animated WebP from raw pixel buffers: setting
-// `pages` / `pageHeight` on raw input throws `vips_image_get: field
-// "n-pages" not found`, and stacking frames into a tall canvas + writing
-// WebP collapses to a single static page (Animation: 0 in webpinfo).
-// That bug surfaced in WhatsApp stickers showing as a vertical column of
-// repeated frames after the first ship.
+// Returns the GIF bytes directly. The same buffer powers two callers:
+//   - 'gif' format clients (WhatsApp Desktop, Slack inline)
+//   - 'webp' format clients (everything else) by re-reading via sharp
 //
-// Working pipeline:
-//   1) Resize each frame to (size × size) RAW RGBA via sharp
-//   2) Build an animated GIF with gifenc (pure JS, transparent palette)
-//   3) Re-read the GIF with sharp({ animated: true }) — sharp DOES treat
-//      animated GIF as multi-page input — and re-encode as animated WebP
-//
-// The intermediate GIF is throwaway. WebP output ends up animated, alpha
-// preserved, and well under WhatsApp's 500KB per-sticker cap.
-async function buildAnimatedWebp(
+// gifenc is the encoder of choice because sharp 0.34 cannot encode animated
+// WebP from raw pixel buffers (setting pages/pageHeight on raw input throws
+// `vips_image_get: field "n-pages" not found`). With a real animated GIF on
+// disk, sharp({ animated: true }) treats it as proper multi-page input.
+async function buildAnimatedGif(
   frames: Buffer[],
   size: number,
   delayMs: number,
@@ -102,7 +98,7 @@ async function buildAnimatedWebp(
   const channels = 4;
   const frameByteLength = size * size * channels;
 
-  // Step 1: resize each frame and pull raw RGBA.
+  // Resize each frame to (size × size) and pull raw RGBA.
   const rawFrames = await Promise.all(
     frames.map((b) =>
       sharp(b).resize(size, size, RESIZE_OPTS).ensureAlpha().raw().toBuffer(),
@@ -117,8 +113,9 @@ async function buildAnimatedWebp(
     }
   }
 
-  // Step 2: encode an animated GIF with gifenc. We palettize per frame
-  // so transparent pixels stay transparent (palette index 0).
+  // Quantize per frame so transparent pixels keep palette index 0.
+  // dispose: 2 restores background between frames; without it old frame
+  // pixels bleed through transparent regions of the next frame.
   const gif = GIFEncoder();
   for (const buf of rawFrames) {
     const u8 = new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
@@ -133,9 +130,11 @@ async function buildAnimatedWebp(
     });
   }
   gif.finish();
-  const gifBuf = Buffer.from(gif.bytes());
+  return Buffer.from(gif.bytes());
+}
 
-  // Step 3: re-read the GIF as multi-page and emit animated WebP.
+// Re-encode an animated GIF as animated WebP via sharp.
+async function gifToAnimatedWebp(gifBuf: Buffer): Promise<Buffer> {
   return await sharp(gifBuf, { animated: true })
     .webp({
       loop: 0,
@@ -158,14 +157,14 @@ export async function renderSticker(
 ): Promise<StickerOutput> {
   const state = getStateSpec(options.state);
   const size = options.size ?? OUT_DEFAULT;
+  const format: StickerFormat = options.format ?? "webp";
 
   const sheet = await fetchSpritesheet(spritesheetUrl);
   const frames = await extractRowFrames(sheet, state.row, state.frames);
 
-  // Animated WebP if >1 frame (true for every pet state — even 4-frame
-  // 'waving'). Single-frame fallback is here for safety; no pet state
-  // currently has frames === 1.
-  if (frames.length <= 1) {
+  // PNG path: always single-frame static. Caller asked for png explicitly
+  // OR the requested state has no animation to extract.
+  if (format === "png" || frames.length <= 1) {
     return {
       buffer: await buildStaticPng(frames[0], size),
       contentType: "image/png",
@@ -175,9 +174,19 @@ export async function renderSticker(
   }
 
   const delayMs = Math.round(state.durationMs / state.frames);
-  const buffer = await buildAnimatedWebp(frames, size, delayMs);
+  const gifBuf = await buildAnimatedGif(frames, size, delayMs);
+
+  if (format === "gif") {
+    return {
+      buffer: gifBuf,
+      contentType: "image/gif",
+      isAnimated: true,
+      frameCount: state.frames,
+    };
+  }
+
   return {
-    buffer,
+    buffer: await gifToAnimatedWebp(gifBuf),
     contentType: "image/webp",
     isAnimated: true,
     frameCount: state.frames,

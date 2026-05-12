@@ -1543,12 +1543,15 @@
   },
   "sticker": {
     "ctaWeChat": "Save for WeChat",
-    "ctaGeneric": "Save as sticker",
+    "ctaGeneric": "Save for WhatsApp",
+    "ctaShort": "Save as sticker",
     "hintWeChat": "Animated WebP · works in WeChat, WhatsApp, Discord",
     "hintGeneric": "Animated WebP · works in WeChat, WhatsApp, Discord",
     "recommendedTag": "Best",
     "downloadAnimated": "Download animated (WebP)",
-    "downloadAnimatedDesc": "240×240 looping · long-press to add as sticker",
+    "downloadAnimatedDesc": "240×240 looping · best for WeChat & Discord",
+    "downloadGif": "Download GIF",
+    "downloadGifDesc": "240×240 animated · best for WhatsApp Desktop / Slack",
     "downloadPack": "WhatsApp Pack (9 stickers)",
     "downloadPackDesc": "Full animated pack · 9 pet states · zip download",
     "downloadPng": "Download static PNG",
@@ -1557,7 +1560,9 @@
     "copyImageDesc": "Paste directly into any chat",
     "preview": "Preview",
     "previewDesc": "Open in a new tab",
-    "howToWeChat": "WeChat: long-press → Add to favorites · WhatsApp: import zip via Sticker Maker",
+    "howToWeChat": "WeChat: long-press → Add to favorites",
+    "howToWhatsApp": "WhatsApp: import the zip with the Sticker Maker app",
+    "desktopNote": "WhatsApp Desktop shows first frame only · plays full animation on phone",
     "errorGeneric": "Something went wrong, try again"
   }
 }

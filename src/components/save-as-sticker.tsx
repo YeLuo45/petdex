@@ -2,11 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { Check, Copy, Download, Package, Play, Sticker } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  Film,
+  Info,
+  Package,
+  Play,
+  Sticker,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { WeChatIcon, WhatsAppIcon } from "@/components/icons/wechat-icon";
-import { Button } from "@/components/ui/button";
 
 type Props = {
   slug: string;
@@ -35,7 +43,8 @@ export function SaveAsSticker({ slug, displayName }: Props) {
 
   const isZh = locale === "zh";
   const stickerWebp = `/api/pets/${slug}/sticker`;
-  const stickerPng = `/api/pets/${slug}/sticker?state=idle`;
+  const stickerGif = `/api/pets/${slug}/sticker?format=gif`;
+  const stickerPng = `/api/pets/${slug}/sticker?format=png`;
   const wastickersUrl = `/api/pets/${slug}/wastickers`;
 
   function flashDone() {
@@ -68,6 +77,14 @@ export function SaveAsSticker({ slug, displayName }: Props) {
     downloadFile(`${stickerWebp}?download=1`, `${slug}-sticker.webp`);
   }
 
+  function downloadGif() {
+    downloadFile(`${stickerGif}&download=1`, `${slug}-sticker.gif`);
+  }
+
+  function downloadStaticPng() {
+    downloadFile(`${stickerPng}&download=1`, `${slug}-sticker.png`);
+  }
+
   function downloadPack() {
     downloadFile(wastickersUrl, `${slug}-petdex-stickers.zip`);
   }
@@ -97,28 +114,35 @@ export function SaveAsSticker({ slug, displayName }: Props) {
     setOpen(false);
   }
 
+  // Sibling-shape (h-10 rounded-full px-4) + sibling-tier height so the
+  // trigger sits flush in the row with Share / Report. Filled green CTA
+  // tuned per mode for contrast:
+  //   - light mode: WhatsApp/WeChat brand green (vivid, white text reads
+  //     cleanly on it like the official apps)
+  //   - dark mode:  deeper saturated green so the chip doesn't burn next
+  //     to the surrounding dark navy surface
+  // White icon + white label keep AA contrast in both. The platform-brand
+  // logo on the left is the disambiguator (WeChat on zh, WhatsApp on en/es).
+  const ctaClasses = isZh
+    ? "bg-[#07C160] hover:bg-[#06ae56] dark:bg-[#0a7d4d] dark:hover:bg-[#0c8c57]"
+    : "bg-[#25D366] hover:bg-[#1EBE5D] dark:bg-[#168649] dark:hover:bg-[#1c9a55]";
+
   return (
     <div className="relative inline-block" ref={menuRef}>
-      <Button
+      <button
         type="button"
-        variant={isZh ? "default" : "outline"}
-        size="sm"
         onClick={() => setOpen((v) => !v)}
-        className={
-          isZh
-            ? "bg-green-600 hover:bg-green-700 text-white border-0 gap-2"
-            : "gap-2"
-        }
         aria-haspopup="menu"
         aria-expanded={open}
+        className={`inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium text-white shadow-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 ${ctaClasses}`}
       >
         {isZh ? (
-          <WeChatIcon className="w-4 h-4" />
+          <WeChatIcon className="w-4 h-4 text-white" />
         ) : (
-          <Sticker className="w-4 h-4" />
+          <WhatsAppIcon className="w-4 h-4 text-white" />
         )}
-        {isZh ? t("ctaWeChat") : t("ctaGeneric")}
-      </Button>
+        {t("ctaShort")}
+      </button>
 
       {open && (
         <div
@@ -156,15 +180,33 @@ export function SaveAsSticker({ slug, displayName }: Props) {
 
           <button
             type="button"
+            onClick={downloadGif}
+            className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors border-t border-border/40"
+          >
+            {status === "working" ? (
+              <Film className="w-4 h-4 animate-pulse text-purple-400" />
+            ) : (
+              <Film className="w-4 h-4 text-purple-400" />
+            )}
+            <div className="flex-1">
+              <div className="font-medium">{t("downloadGif")}</div>
+              <div className="text-xs text-muted-foreground">
+                {t("downloadGifDesc")}
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
             onClick={downloadPack}
             className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors border-t border-border/40"
           >
             {status === "working" ? (
-              <Package className="w-4 h-4 animate-pulse text-green-500" />
+              <Package className="w-4 h-4 animate-pulse text-[#25D366]" />
             ) : status === "done" ? (
-              <Check className="w-4 h-4 text-green-500" />
+              <Check className="w-4 h-4 text-[#25D366]" />
             ) : (
-              <WhatsAppIcon className="w-4 h-4 text-green-500" />
+              <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
             )}
             <div className="flex-1">
               <div className="font-medium">{t("downloadPack")}</div>
@@ -176,9 +218,7 @@ export function SaveAsSticker({ slug, displayName }: Props) {
 
           <button
             type="button"
-            onClick={() =>
-              downloadFile(`${stickerPng}&download=1`, `${slug}-sticker.png`)
-            }
+            onClick={downloadStaticPng}
             className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-accent transition-colors border-t border-border/40"
           >
             <Download className="w-4 h-4 text-muted-foreground" />
@@ -218,11 +258,22 @@ export function SaveAsSticker({ slug, displayName }: Props) {
             </div>
           </button>
 
-          {isZh && (
-            <div className="px-3 py-2 mt-1 border-t border-border text-xs text-muted-foreground">
-              {t("howToWeChat")}
+          <div className="px-3 py-2 mt-1 border-t border-border text-[11px] text-muted-foreground space-y-1.5">
+            {isZh && (
+              <div className="flex items-start gap-2">
+                <WeChatIcon className="w-3 h-3 mt-0.5 text-[#07C160] shrink-0" />
+                <span>{t("howToWeChat")}</span>
+              </div>
+            )}
+            <div className="flex items-start gap-2">
+              <WhatsAppIcon className="w-3 h-3 mt-0.5 text-[#25D366] shrink-0" />
+              <span>{t("howToWhatsApp")}</span>
             </div>
-          )}
+            <div className="flex items-start gap-2">
+              <Info className="w-3 h-3 mt-0.5 text-amber-400 shrink-0" />
+              <span>{t("desktopNote")}</span>
+            </div>
+          </div>
         </div>
       )}
 
