@@ -10,7 +10,8 @@
  * Run from packages/petdex-cli:
  *   bun test src/desktop/process.win32.test.ts
  */
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import { homedir } from "node:os";
 
 import { desktopBinPath, detectTarget } from "./install.js";
 import { isPidAlive } from "./process.js";
@@ -37,48 +38,24 @@ describe("isPidAlive", () => {
 // ---------------------------------------------------------------------------
 
 describe("desktopBinPath", () => {
-  let savedHome: string | undefined;
-  let savedUserProfile: string | undefined;
-
-  beforeEach(() => {
-    savedHome = process.env.HOME;
-    savedUserProfile = process.env.USERPROFILE;
-  });
-
-  afterEach(() => {
-    if (savedHome === undefined) delete process.env.HOME;
-    else process.env.HOME = savedHome;
-
-    if (savedUserProfile === undefined) delete process.env.USERPROFILE;
-    else process.env.USERPROFILE = savedUserProfile;
-  });
-
   test("adds .exe suffix exactly on win32", () => {
     const p = desktopBinPath();
     if (process.platform === "win32") {
       expect(p.endsWith(".exe")).toBe(true);
     } else {
-      // On macOS / Linux the bare binary has no extension
       expect(p.endsWith(".exe")).toBe(false);
     }
   });
 
   test("returns a string that includes 'petdex-desktop'", () => {
-    const p = desktopBinPath();
-    expect(p).toContain("petdex-desktop");
+    expect(desktopBinPath()).toContain("petdex-desktop");
   });
 
-  test("returns a path under the user home directory", () => {
-    // desktopBinPath() uses os.homedir() internally, which resolves
-    // HOME/USERPROFILE/HOMEDRIVE+HOMEPATH from the OS — not env vars.
-    // We just verify the result is an absolute path under *some* home dir.
-    const { homedir } = require("node:os");
-    const home: string = homedir();
-    const p = desktopBinPath();
-    // Either a fallback ~/.petdex/bin path OR an .app bundle path —
-    // both live inside the user's home directory.
-    // On Windows the .app search is skipped so it's always the bin path.
-    expect(p.startsWith(home) || p.includes("petdex-desktop")).toBe(true);
+  test("returns a path under the OS home directory", () => {
+    // desktopBinPath() uses os.homedir() for the fallback path. In test
+    // environments there is no /Applications/Petdex.app, so the fallback
+    // ~/.petdex/bin/petdex-desktop[.exe] is always returned.
+    expect(desktopBinPath().startsWith(homedir())).toBe(true);
   });
 });
 
@@ -100,7 +77,6 @@ describe("detectTarget", () => {
     // Pattern: "<os>-<arch>" where os ∈ {darwin, linux, win32} and
     // arch ∈ {arm64, x64} (other arches pass through as-is).
     expect(t.assetSuffix).toMatch(/^[a-z0-9]+-[a-z0-9_]+$/);
-    // The suffix must be at least "os-arch" (3 chars + dash + 2 chars).
     expect(t.assetSuffix.length).toBeGreaterThanOrEqual(6);
   });
 

@@ -7,24 +7,17 @@
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 import path from "node:path";
 
 import pc from "picocolors";
 
-import { desktopBinPath } from "./install.js";
+import { desktopBinPath, homeDir } from "./install.js";
 
-// Lazy resolution so tests can swap HOME and have the pid file
-// land in their tmpdir. os.homedir() ignores HOME on macOS (it
-// goes through getpwuid()), so we prefer process.env.HOME when
-// set — same trick the telemetry module uses.
 function pidFile(): string {
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? homedir();
-  return path.join(home, ".petdex", "desktop.pid");
+  return path.join(homeDir(), ".petdex", "desktop.pid");
 }
 function logFile(): string {
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? homedir();
-  return path.join(home, ".petdex", "desktop.log");
+  return path.join(homeDir(), ".petdex", "desktop.log");
 }
 
 // On-disk pid file shape. We store BOTH the pid and the process
@@ -90,6 +83,15 @@ function processStartTime(pid: number): string | null {
   } catch {
     return null;
   }
+}
+
+// Returns the lstart value to store in the pid file for a just-spawned
+// process. On POSIX we capture the real start-time string for identity
+// verification. On Windows ps is unavailable, so we write the literal
+// "win32" sentinel — pidMatchesRecord() will use isPidAlive() instead.
+function recordLstart(pid: number): string {
+  if (process.platform === "win32") return "win32";
+  return processStartTime(pid) ?? "";
 }
 
 /**
@@ -221,21 +223,10 @@ export async function startDesktop(): Promise<StartResult> {
     return { ok: false, reason: "Failed to spawn petdex-desktop" };
   }
 
-  // Capture the start-time NOW so a future `petdex desktop stop` can
-  // verify identity. The child has already been spawned, so `ps`
-  // will see it. If `ps` fails for some reason (sandbox, missing PATH)
-  // we still write the pid so legacy-path identity checks fail safe
-  // (status() returns stale rather than running, no signal is sent).
-  //
-  // On Windows, `ps` is unavailable; we store a "win32" sentinel so
-  // pidMatchesRecord() can use isPidAlive() for liveness instead.
-  const lstart =
-    process.platform === "win32"
-      ? isPidAlive(child.pid)
-        ? "win32"
-        : ""
-      : (processStartTime(child.pid) ?? "");
-  const record: PidRecord = { pid: child.pid, lstart };
+  // Capture the start-time so a future `petdex desktop stop` can
+  // verify identity before signalling. recordLstart() handles the
+  // POSIX (ps) and Windows (sentinel) cases.
+  const record: PidRecord = { pid: child.pid, lstart: recordLstart(child.pid) };
   await writeFile(pidFile(), JSON.stringify(record));
   return { ok: true, pid: child.pid, alreadyRunning: false };
 }
@@ -283,13 +274,7 @@ async function startViaOpen(appBundle: string): Promise<StartResult> {
     };
   }
 
-  const lstart =
-    process.platform === "win32"
-      ? isPidAlive(pid)
-        ? "win32"
-        : ""
-      : (processStartTime(pid) ?? "");
-  const record: PidRecord = { pid, lstart };
+  const record: PidRecord = { pid, lstart: recordLstart(pid) };
   await writeFile(pidFile(), JSON.stringify(record));
   return { ok: true, pid, alreadyRunning: false };
 }

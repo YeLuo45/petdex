@@ -632,7 +632,7 @@ export function isTrustedAssetUrl(url: string): boolean {
 // pets dirs land in their tmpdir. os.homedir() ignores HOME on
 // macOS — we prefer process.env.HOME, then USERPROFILE (Windows),
 // falling back to homedir() when neither is set.
-function homeDir(): string {
+export function homeDir(): string {
   return process.env.HOME ?? process.env.USERPROFILE ?? homedir();
 }
 
@@ -945,8 +945,8 @@ function formatBytes(bytes: number): string {
 }
 
 function tildeify(p: string): string {
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? homedir();
-  if (home && p.startsWith(home)) return `~${p.slice(home.length)}`;
+  const home = homeDir();
+  if (p.startsWith(home)) return `~${p.slice(home.length)}`;
   return p;
 }
 
