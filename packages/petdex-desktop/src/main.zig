@@ -3315,8 +3315,7 @@ test "listPetsFromDir: oversized pet.json falls back to slug, doesn't fail the l
 
 test "parseDeepLinkFromUrl: single activate slug" {
     const a = std.testing.allocator;
-    const raw = try a.dupe(u8, "petdex://boba");
-    const dl = try parseDeepLinkFromUrl(a, raw);
+    const dl = try parseDeepLinkFromUrl(a, "petdex://boba");
     defer freeDeepLink(a, dl);
     try std.testing.expect(dl == .activate);
     try std.testing.expectEqualStrings("boba", dl.activate);
@@ -3324,8 +3323,7 @@ test "parseDeepLinkFromUrl: single activate slug" {
 
 test "parseDeepLinkFromUrl: batch install via repeated slug params" {
     const a = std.testing.allocator;
-    const raw = try a.dupe(u8, "petdex://install?slug=boba&slug=doraemon");
-    const dl = try parseDeepLinkFromUrl(a, raw);
+    const dl = try parseDeepLinkFromUrl(a, "petdex://install?slug=boba&slug=doraemon");
     defer freeDeepLink(a, dl);
     try std.testing.expect(dl == .install);
     try std.testing.expectEqual(@as(usize, 2), dl.install.items.len);
@@ -3335,8 +3333,7 @@ test "parseDeepLinkFromUrl: batch install via repeated slug params" {
 
 test "parseDeepLinkFromUrl: batch install via slugs csv" {
     const a = std.testing.allocator;
-    const raw = try a.dupe(u8, "petdex://install?slugs=mochi,kebo");
-    const dl = try parseDeepLinkFromUrl(a, raw);
+    const dl = try parseDeepLinkFromUrl(a, "petdex://install?slugs=mochi,kebo");
     defer freeDeepLink(a, dl);
     try std.testing.expect(dl == .install);
     try std.testing.expectEqual(@as(usize, 2), dl.install.items.len);
@@ -3344,8 +3341,7 @@ test "parseDeepLinkFromUrl: batch install via slugs csv" {
 
 test "parseDeepLinkFromUrl: batch install via percent-encoded slugs csv" {
     const a = std.testing.allocator;
-    const raw = try a.dupe(u8, "petdex://install?slugs=mochi%2Ckebo");
-    const dl = try parseDeepLinkFromUrl(a, raw);
+    const dl = try parseDeepLinkFromUrl(a, "petdex://install?slugs=mochi%2Ckebo");
     defer freeDeepLink(a, dl);
     try std.testing.expect(dl == .install);
     try std.testing.expectEqual(@as(usize, 2), dl.install.items.len);
@@ -3355,8 +3351,7 @@ test "parseDeepLinkFromUrl: batch install via percent-encoded slugs csv" {
 
 test "parseDeepLinkFromUrl: rejects path with slash" {
     const a = std.testing.allocator;
-    const raw = try a.dupe(u8, "petdex://foo/bar");
-    const dl = try parseDeepLinkFromUrl(a, raw);
+    const dl = try parseDeepLinkFromUrl(a, "petdex://foo/bar");
     defer freeDeepLink(a, dl);
     try std.testing.expect(dl == .none);
 }
