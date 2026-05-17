@@ -346,36 +346,54 @@ export async function stopDesktop(
       reason: `petdex-desktop exited before stop (pid ${pid} no longer alive)`,
     };
   }
-  try {
-    if (process.platform === "win32") {
-      // SIGTERM via process.kill() maps to TerminateProcess() on Windows,
-      // which does not give the child a chance to clean up (no WM_QUIT).
-      // taskkill /t /f sends TerminateProcess to the whole process tree,
-      // which also kills the sidecar child — the desired behaviour.
+  if (process.platform === "win32") {
+    // SIGTERM via process.kill() maps to TerminateProcess() on Windows,
+    // which does not give the child a chance to clean up (no WM_QUIT).
+    // taskkill /t /f sends TerminateProcess to the whole process tree,
+    // which also kills the sidecar child — the desired behaviour.
+    try {
       execFileSync("taskkill", ["/pid", String(pid), "/t", "/f"], {
         stdio: "ignore",
+        timeout: 5000,
       });
-    } else {
+    } catch {
+      // taskkill can fail if the process exited between our liveness
+      // recheck and the kill call (tiny race window). Mirror POSIX ESRCH:
+      // if the process is already gone, that is success.
+      if (!isPetdexPidAlive(pid)) {
+        clearPidFile();
+        const released = await waitForPortRelease(sidecarPort, {
+          timeoutMs: portWaitTimeoutMs,
+        });
+        return { ok: true, pid, portReleased: released };
+      }
+      return {
+        ok: false,
+        reason: `taskkill failed and pid ${pid} is still alive`,
+      };
+    }
+  } else {
+    try {
       process.kill(pid, "SIGTERM");
+    } catch (err) {
+      clearPidFile();
+      const code = (err as NodeJS.ErrnoException).code;
+      // ESRCH means the process exited between our re-check and this
+      // kill (microsecond window). From the user's perspective "stop"
+      // succeeded — the process is gone.
+      if (code === "ESRCH") {
+        // Try the port wait anyway — the sidecar may still be alive
+        // because the desktop binary is its parent, not us.
+        const released = await waitForPortRelease(sidecarPort, {
+          timeoutMs: portWaitTimeoutMs,
+        });
+        return { ok: true, pid, portReleased: released };
+      }
+      return {
+        ok: false,
+        reason: `Failed to signal pid ${pid}: ${(err as Error).message}`,
+      };
     }
-  } catch (err) {
-    clearPidFile();
-    const code = (err as NodeJS.ErrnoException).code;
-    // ESRCH means the process exited between our re-check and this
-    // kill (microsecond window). From the user's perspective "stop"
-    // succeeded — the process is gone.
-    if (code === "ESRCH") {
-      // Try the port wait anyway — the sidecar may still be alive
-      // because the desktop binary is its parent, not us.
-      const released = await waitForPortRelease(sidecarPort, {
-        timeoutMs: portWaitTimeoutMs,
-      });
-      return { ok: true, pid, portReleased: released };
-    }
-    return {
-      ok: false,
-      reason: `Failed to signal pid ${pid}: ${(err as Error).message}`,
-    };
   }
   clearPidFile();
   // Wait for the sidecar to actually release :7777 before we tell
