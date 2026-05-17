@@ -914,6 +914,26 @@ const html_tail =
     \\    if (!(window.zero && window.zero.invoke)) return;
     \\    try { await window.zero.invoke('zero-native.window.resize', { width: w, height: h, anchor: 'top-left' }); } catch (e) {}
     \\  }
+    \\  // openMenu positions against menuWidth/Height, but WebKit still clips to the
+    \\  // *current* window until the native resize lands. Wait for innerWidth to catch up
+    \\  // so post-install "Switch active pet?" does not flash a menu sliced at 140px.
+    \\  function waitForWindowSize(w, h, timeoutMs) {
+    \\    const deadline = Date.now() + (timeoutMs || 500);
+    \\    return new Promise((resolve) => {
+    \\      const tick = () => {
+    \\        if (window.innerWidth >= w - 2 && window.innerHeight >= h - 2) {
+    \\          resolve();
+    \\          return;
+    \\        }
+    \\        if (Date.now() >= deadline) {
+    \\          resolve();
+    \\          return;
+    \\        }
+    \\        requestAnimationFrame(tick);
+    \\      };
+    \\      tick();
+    \\    });
+    \\  }
     \\  function closeMenu() {
     \\    const dismissPrompt = bubbleWithMenu;
     \\    bubbleWithMenu = false;
@@ -1033,15 +1053,16 @@ const html_tail =
     \\    menuEl.style.top = top + 'px';
     \\  }
     \\  let virtualGrid = null;
-    \\  function openMenu() {
+    \\  async function openMenu() {
     \\    if (menuEl) closeMenu();
     \\    if (virtualGrid) { virtualGrid.dispose(); virtualGrid = null; }
     \\    const data = window.__PETDEX__ || { pets: [], active: null };
-    \\    // Snapshot pet position BEFORE resize triggers any layout shift.
-    \\    const petRect = pet.getBoundingClientRect();
     \\    if (data.menuWidth && data.menuHeight) {
-    \\      resizeWindowTo(data.menuWidth, data.menuHeight);
+    \\      await resizeWindowTo(data.menuWidth, data.menuHeight);
+    \\      await waitForWindowSize(data.menuWidth, data.menuHeight);
     \\    }
+    \\    // Snapshot pet position after the picker window has expanded.
+    \\    const petRect = pet.getBoundingClientRect();
     \\    menuEl = document.createElement('div');
     \\    menuEl.className = 'menu';
     \\    const input = document.createElement('input');
@@ -1121,7 +1142,7 @@ const html_tail =
     \\  pet.addEventListener('contextmenu', (e) => {
     \\    e.preventDefault();
     \\    e.stopImmediatePropagation();
-    \\    openMenu();
+    \\    void openMenu();
     \\  });
     \\  // Prevent the system's default contextmenu anywhere (selection helpers, etc.)
     \\  document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1130,14 +1151,16 @@ const html_tail =
     \\  document.addEventListener('click', (e) => {
     \\    if (menuEl && !menuEl.contains(e.target) && e.target !== pet) closeMenu();
     \\  }, true);
-    \\  try {
-    \\    if (sessionStorage.getItem('petdex-post-install')) {
+    \\  (async () => {
+    \\    try {
+    \\      if (!sessionStorage.getItem('petdex-post-install')) return;
     \\      sessionStorage.removeItem('petdex-post-install');
     \\      bubbleWithMenu = true;
+    \\      await openMenu();
     \\      showLocalBubble('Switch active pet?');
-    \\      openMenu();
-    \\    }
-    \\  } catch (_) {}
+    \\      if (menuEl) positionMenuFromData(pet.getBoundingClientRect());
+    \\    } catch (_) {}
+    \\  })();
     \\})();
     \\</script>
     \\</body>
