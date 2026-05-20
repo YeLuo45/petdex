@@ -124,8 +124,7 @@ function PrimaryButton({
     );
   }
 
-  // Desktop platforms we don't have a binary for yet. The button
-  // is non-clickable but mirrors the layout so we don't reflow.
+  // Linux / Windows — binary not yet available.
   if (platform === "linux" || platform === "windows") {
     return (
       <span
@@ -135,7 +134,7 @@ function PrimaryButton({
         <Clock className="size-4" />
         {comingSoonLabel.replace(
           "{os}",
-          platform === "linux" ? "Linux" : "Windows",
+          platform === "windows" ? "Windows" : "Linux",
         )}
       </span>
     );

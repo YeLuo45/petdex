@@ -31,7 +31,7 @@ export function parsePendingPet(
   next: string | string[] | undefined,
 ): string | null {
   const value = Array.isArray(next) ? next[0] : next;
-  if (!value || !value.startsWith("install/")) return null;
+  if (!value?.startsWith("install/")) return null;
   const slug = value.slice("install/".length);
   // Mirror the server slug regex so a malformed ?next= can't render anything.
   if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(slug)) return null;
