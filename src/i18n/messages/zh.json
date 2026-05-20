@@ -1808,6 +1808,12 @@
     "dismissAria": "忽略",
     "closeAria": "关闭"
   },
+  "buildUpdate": {
+    "title": "发现新版本",
+    "body": "刷新后即可使用最新内容。",
+    "later": "稍后",
+    "refresh": "刷新"
+  },
   "collectionsPage": {
     "metadata": {
       "title": "精选合集",

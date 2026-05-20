@@ -1569,6 +1569,12 @@
     "dismissAria": "Dismiss",
     "closeAria": "Close"
   },
+  "buildUpdate": {
+    "title": "New version available",
+    "body": "Refresh to use the latest Petdex.",
+    "later": "Later",
+    "refresh": "Refresh"
+  },
   "collectionsPage": {
     "metadata": {
       "title": "Featured collections",
