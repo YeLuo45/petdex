@@ -122,12 +122,13 @@ jobs:
         run: cargo install tauri-cli --version "^2" --locked
 
       - name: Build petdex-desktop-win32-x64.exe
-        # `--bundles none` skips NSIS/WiX installer generation (we ship the
-        # bare .exe per the CLI asset contract). The binary name is driven by
-        # the [[bin]] entry in Cargo.toml: `petdex-desktop-win32-x64`.
+        # `--no-bundle` skips NSIS/WiX installer generation (we ship the
+        # bare .exe per the CLI asset contract). `--bundles none` was
+        # removed in tauri-cli 2.x; `--no-bundle` is the correct flag.
+        # The binary name is driven by the [[bin]] entry in Cargo.toml.
         working-directory: packages/petdex-desktop-windows
         run: |
-          cargo tauri build --bundles none
+          cargo tauri build --no-bundle
           $exe = "src-tauri\target\release\petdex-desktop-win32-x64.exe"
           if (-not (Test-Path $exe)) { throw "Binary not found at $exe" }
           Write-Output "Binary size: $((Get-Item $exe).Length) bytes"
@@ -180,3 +181,4 @@ jobs:
           files: release/*
           generate_release_notes: true
           fail_on_unmatched_files: true
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-rc') }}
