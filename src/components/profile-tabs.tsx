@@ -280,6 +280,7 @@ function PetsPanel({
                     pet={pet}
                     index={index}
                     stateCount={stateCount}
+                    hideAuthor
                     ownerActions={
                       isOwner
                         ? { submissionId: pet.id, status: "approved" }
@@ -337,6 +338,7 @@ function PetsPanel({
                 pet={submissionToPet(submission)}
                 index={index}
                 stateCount={stateCount}
+                hideAuthor
                 statusOverlay={{ label: "Pending", tone: "warning" }}
                 ownerActions={{
                   submissionId: submission.id,
@@ -373,6 +375,7 @@ function PetsPanel({
                 pet={submissionToPet(submission)}
                 index={index}
                 stateCount={stateCount}
+                hideAuthor
                 statusOverlay={{ label: "Rejected", tone: "danger" }}
                 ownerActions={{
                   submissionId: submission.id,
